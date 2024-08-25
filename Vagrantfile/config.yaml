@@ -1,0 +1,12 @@
+---
+configs:
+  use: 'testing'
+  testing:
+    master_vm_addr: 192.168.56.30
+    worker_vm_addr: 192.168.56.20
+    master_vm_cpu: 1
+    worker_vm_cpu: 2
+    master_vm_memory: 1024
+    worker_vm_memory: 3072
+    master_vm: 'MasterVM'
+    worker_vm: 'WorkerVM'

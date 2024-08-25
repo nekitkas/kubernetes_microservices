@@ -1,0 +1,65 @@
+require 'yaml'
+
+box = "generic/ubuntu2204"
+current_dir    = File.dirname(File.expand_path(__FILE__))
+configs        = YAML.load_file("#{current_dir}/config.yaml")
+vagrant_config = configs['configs'][configs['configs']['use']]
+
+master_vm_addr = vagrant_config['master_vm_addr']
+worker_vm_addr = vagrant_config['worker_vm_addr']
+
+master_vm_cpu = vagrant_config['master_vm_cpu']
+worker_vm_cpu = vagrant_config['worker_vm_cpu']
+
+master_vm_memory = vagrant_config['master_vm_memory']
+worker_vm_memory = vagrant_config['worker_vm_memory']
+
+master_vm = vagrant_config['master_vm']
+worker_vm = vagrant_config['worker_vm']
+
+master_vm_hostname = vagrant_config['master_vm_hostname']
+worker_vm_hostname = vagrant_config['worker_vm_hostname']
+
+master_script = <<-SHELL
+    export INSTALL_K3S_EXEC="--bind-address=#{master_vm_addr} --node-external-ip=#{master_vm_addr} --flannel-iface=eth1"
+    curl -sfL https://get.k3s.io | sh -
+    echo "Sleeping for 5 seconds to wait for k3s to start"
+    sleep 5
+    cp /var/lib/rancher/k3s/server/token /vagrant_shared
+    cp /etc/rancher/k3s/k3s.yaml /vagrant_shared
+    SHELL
+
+worker_script = <<-SHELL
+    export K3S_URL=https://#{master_vm_addr}:6443
+    export K3S_TOKEN=$(cat /vagrant_shared/token)
+    export INSTALL_K3S_EXEC="--flannel-iface=eth1"
+    curl -sfL https://get.k3s.io | sh -s - --with-node-id
+    SHELL
+
+Vagrant.configure("2") do |config|
+    config.vm.box = box
+
+    config.vm.define master_vm do |master_vm|
+        master_vm.vm.hostname = master_vm_hostname
+        master_vm.vm.network "private_network", ip: master_vm_addr
+        master_vm.vm.synced_folder "./shared", "/vagrant_shared"
+        master_vm.vm.provider "virtualbox" do |vb|
+            vb.memory = master_vm_memory
+            vb.cpus = master_vm_cpu
+            vb.name = master_vm_hostname
+        end
+        master_vm.vm.provision "shell", inline: master_script
+    end
+
+    config.vm.define worker_vm do |worker_vm|
+        worker_vm.vm.hostname = worker_vm_hostname
+        worker_vm.vm.network "private_network", ip: worker_vm_addr
+        worker_vm.vm.synced_folder "./shared", "/vagrant_shared"
+        worker_vm.vm.provider "virtualbox" do |vb|
+            vb.memory = worker_vm_memory
+            vb.cpus = worker_vm_cpu
+            vb.name = worker_vm_hostname
+        end
+        worker_vm.vm.provision "shell", inline: worker_script
+    end
+end
