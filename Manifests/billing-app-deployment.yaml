@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: billing-app
+  labels:
+    app: billing-app
+spec:
+  serviceName: billing-app
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing-app
+  template:
+    metadata:
+      labels:
+        app: billing-app
+    spec:
+      containers:
+        - name: billing-app
+          image: nekitkas/billing-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BILLING_APP_PORT
+              value: "8080"
+            - name: RABBITMQ_HOST
+              value: rabbitmq
+            - name: BILLING_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_DB
+                  name: billing-db-config
+            - name: BILLING_DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_USER
+                  name: billing-db-config
+            - name: BILLING_DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: billing-db-config
+            - name: BILLING_DB_HOST
+              value: billing-db
+          envFrom:
+            - configMapRef:
+                name: rabbitmq-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-app
+  labels:
+    app: billing-app
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: billing-app
+  clusterIP: None

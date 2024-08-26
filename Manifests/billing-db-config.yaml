@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: billing-db-config
+data:
+  POSTGRES_DB: billing
+  POSTGRES_USER: billing
+  POSTGRES_PASSWORD: billing

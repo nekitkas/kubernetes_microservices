@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-app
+  labels:
+    app: inventory-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-app
+  template:
+    metadata:
+      labels:
+        app: inventory-app
+    spec:
+      containers:
+        - name: inventory-app
+          image: nekitkas/inventory-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: INVENTORY_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: inventory-db-config
+                  key: POSTGRES_DB
+            - name: INVENTORY_DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: inventory-db-config
+                  key: POSTGRES_USER
+            - name: INVENTORY_DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: inventory-db-config
+                  key: POSTGRES_PASSWORD
+            - name: INVENTORY_DB_HOST
+              value: inventory-db
+            - name: INVENTORY_APP_PORT
+              value: "8080"
+          resources:
+            requests:
+              cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-app
+  labels:
+    app: inventory-app
+spec:
+    ports:
+      - name: inventory-app
+        protocol: TCP
+        port: 8080
+        targetPort: 8080
+    selector:
+        app: inventory-app
+    type: ClusterIP

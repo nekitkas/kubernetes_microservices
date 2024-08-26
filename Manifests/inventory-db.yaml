@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: inventory-db
+  labels:
+    app: inventory-db
+spec:
+  serviceName: inventory-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-db
+  template:
+    metadata:
+      labels:
+        app: inventory-db
+    spec:
+      containers:
+        - name: inventory-db
+          image: nekitkas/inventory-db:latest
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: inventory-db-config
+          volumeMounts:
+            - name: inventory-db-pv
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: inventory-db-pv
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-db
+  labels:
+    app: inventory-db
+spec:
+  ports:
+    - name: inventory-db
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: inventory-db
+  clusterIP: None
