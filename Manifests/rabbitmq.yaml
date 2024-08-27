@@ -23,21 +23,20 @@ spec:
               name: amqp
             - containerPort: 15672
               name: management
+          env:
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_USER
+                  name: rabbitmq-secret
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_PASSWORD
+                  name: rabbitmq-secret
           envFrom:
             - configMapRef:
                 name: rabbitmq-config
-          volumeMounts:
-            - name: rabbitmq-pv
-              mountPath: /var/lib/rabbitmq
-  volumeClaimTemplates:
-    - metadata:
-        name: rabbitmq-pv
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
@@ -53,4 +52,4 @@ spec:
       name: management
   selector:
     app: rabbitmq
-  type: ClusterIP
+  clusterIP: None

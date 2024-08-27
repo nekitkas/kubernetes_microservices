@@ -3,6 +3,4 @@ kind: ConfigMap
 metadata:
   name: inventory-db-config
 data:
-  POSTGRES_DB: inventory
-  POSTGRES_USER: inventory
-  POSTGRES_PASSWORD: inventory
+  POSTGRES_DB: "inventory"

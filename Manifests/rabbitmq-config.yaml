@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: rabbitmq-config
-data:
-  RABBITMQ_USER: "rabbit"
-  RABBITMQ_PASSWORD: "rabbit"
-  RABBITMQ_PORT: "5672"

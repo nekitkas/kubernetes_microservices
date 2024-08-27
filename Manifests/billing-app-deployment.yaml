@@ -25,6 +25,18 @@ spec:
               value: "8080"
             - name: RABBITMQ_HOST
               value: rabbitmq
+            - name: RABBITMQ_PORT
+              value: "5672"
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_USER
+                  name: rabbitmq-secret
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: RABBITMQ_PASSWORD
+                  name: rabbitmq-secret
             - name: BILLING_DB_NAME
               valueFrom:
                 configMapKeyRef:
@@ -32,19 +44,16 @@ spec:
                   name: billing-db-config
             - name: BILLING_DB_USER
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   key: POSTGRES_USER
-                  name: billing-db-config
+                  name: billing-db-secret
             - name: BILLING_DB_PASSWORD
               valueFrom:
-                configMapKeyRef:
+                secretKeyRef:
                   key: POSTGRES_PASSWORD
-                  name: billing-db-config
+                  name: billing-db-secret
             - name: BILLING_DB_HOST
               value: billing-db
-          envFrom:
-            - configMapRef:
-                name: rabbitmq-config
 ---
 apiVersion: v1
 kind: Service

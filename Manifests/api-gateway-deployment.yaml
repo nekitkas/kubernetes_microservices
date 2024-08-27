@@ -30,9 +30,16 @@ spec:
             value: "8080"
           - name: RABBITMQ_HOST
             value: rabbitmq
-        envFrom:
-          - configMapRef:
-              name: rabbitmq-config
+          - name: RABBITMQ_USER
+            valueFrom:
+              secretKeyRef:
+                key: RABBITMQ_USER
+                name: rabbitmq-secret
+          - name: RABBITMQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: RABBITMQ_PASSWORD
+                name: rabbitmq-secret
         resources:
           requests:
             cpu: "100m"
